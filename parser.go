@@ -29,38 +29,45 @@ type Parser struct {
 	Entities        []*PacketEntity
 	ByHandle        map[int]*PacketEntity
 
-	OnEntityCreated   func(*PacketEntity)
-	OnEntityDeleted   func(*PacketEntity)
+	OnEntityCreated func(*PacketEntity)
+	OnEntityDeleted func(*PacketEntity)
+	//no idea what this does but it's used in the example so probably useful
 	OnEntityPreserved func(*PacketEntity)
 
 	OnActiveModifierDelta func(map[int]*StringTableItem, ModifierBuffs)
 
-	OnAbilitySteal              func(tick int, obj *dota.CDOTAUserMsg_AbilitySteal)
-	OnBoosterState              func(tick int, obj *dota.CDOTAUserMsg_BoosterState)
-	OnBotChat                   func(tick int, obj *dota.CDOTAUserMsg_BotChat)
-	OnChatEvent                 func(tick int, obj *dota.CDOTAUserMsg_ChatEvent)
-	OnChatWheel                 func(tick int, obj *dota.CDOTAUserMsg_ChatWheel)
-	OnClassInfo                 func(tick int, obj *dota.CSVCMsg_ClassInfo)
-	OnCourierKilledAlert        func(tick int, obj *dota.CDOTAUserMsg_CourierKilledAlert)
-	OnCreateLinearProjectile    func(tick int, obj *dota.CDOTAUserMsg_CreateLinearProjectile)
-	OnDemoStop                  func(tick int, obj *dota.CDemoStop)
-	OnDemoSyncTick              func(tick int, obj *dota.CDemoSyncTick)
-	OnDestroyLinearProjectile   func(tick int, obj *dota.CDOTAUserMsg_DestroyLinearProjectile)
-	OnDodgeTrackingProjectiles  func(tick int, obj *dota.CDOTAUserMsg_DodgeTrackingProjectiles)
-	OnEnemyItemAlert            func(tick int, obj *dota.CDOTAUserMsg_EnemyItemAlert)
-	OnGlobalLightColor          func(tick int, obj *dota.CDOTAUserMsg_GlobalLightColor)
-	OnGlobalLightDirection      func(tick int, obj *dota.CDOTAUserMsg_GlobalLightDirection)
-	OnHPManaAlert               func(tick int, obj *dota.CDOTAUserMsg_HPManaAlert)
-	OnHalloweenDrops            func(tick int, obj *dota.CDOTAUserMsg_HalloweenDrops)
-	OnHudError                  func(tick int, obj *dota.CDOTAUserMsg_HudError)
-	OnLocationPing              func(tick int, obj *dota.CDOTAUserMsg_LocationPing)
-	OnMapLine                   func(tick int, obj *dota.CDOTAUserMsg_MapLine)
-	OnMinimapEvent              func(tick int, obj *dota.CDOTAUserMsg_MinimapEvent)
-	OnNevermoreRequiem          func(tick int, obj *dota.CDOTAUserMsg_NevermoreRequiem)
-	OnOverheadEvent             func(tick int, obj *dota.CDOTAUserMsg_OverheadEvent)
-	OnParticleManager           func(tick int, obj *dota.CDOTAUserMsg_ParticleManager)
-	OnPredictionResult          func(tick int, obj *dota.CDOTAUserMsg_PredictionResult)
-	OnPrint                     func(tick int, obj *dota.CSVCMsg_Print)
+	OnAbilitySteal             func(tick int, obj *dota.CDOTAUserMsg_AbilitySteal)
+	OnBoosterState             func(tick int, obj *dota.CDOTAUserMsg_BoosterState)
+	OnBotChat                  func(tick int, obj *dota.CDOTAUserMsg_BotChat)
+	OnChatEvent                func(tick int, obj *dota.CDOTAUserMsg_ChatEvent)
+	OnChatWheel                func(tick int, obj *dota.CDOTAUserMsg_ChatWheel)
+	OnClassInfo                func(tick int, obj *dota.CSVCMsg_ClassInfo)
+	OnCourierKilledAlert       func(tick int, obj *dota.CDOTAUserMsg_CourierKilledAlert)
+	OnCreateLinearProjectile   func(tick int, obj *dota.CDOTAUserMsg_CreateLinearProjectile)
+	OnDemoStop                 func(tick int, obj *dota.CDemoStop)
+	OnDemoSyncTick             func(tick int, obj *dota.CDemoSyncTick)
+	OnDestroyLinearProjectile  func(tick int, obj *dota.CDOTAUserMsg_DestroyLinearProjectile)
+	OnDodgeTrackingProjectiles func(tick int, obj *dota.CDOTAUserMsg_DodgeTrackingProjectiles)
+	//alt clicking enemy item?
+	OnEnemyItemAlert       func(tick int, obj *dota.CDOTAUserMsg_EnemyItemAlert)
+	OnGlobalLightColor     func(tick int, obj *dota.CDOTAUserMsg_GlobalLightColor)
+	OnGlobalLightDirection func(tick int, obj *dota.CDOTAUserMsg_GlobalLightDirection)
+	//alt clicking healthbar?
+	OnHPManaAlert    func(tick int, obj *dota.CDOTAUserMsg_HPManaAlert)
+	OnHalloweenDrops func(tick int, obj *dota.CDOTAUserMsg_HalloweenDrops)
+	OnHudError       func(tick int, obj *dota.CDOTAUserMsg_HudError)
+	//minimap ping
+	OnLocationPing func(tick int, obj *dota.CDOTAUserMsg_LocationPing)
+	//minimap drawings?
+	OnMapLine          func(tick int, obj *dota.CDOTAUserMsg_MapLine)
+	OnMinimapEvent     func(tick int, obj *dota.CDOTAUserMsg_MinimapEvent)
+	OnNevermoreRequiem func(tick int, obj *dota.CDOTAUserMsg_NevermoreRequiem)
+	//is this exp/gold/denies?
+	OnOverheadEvent    func(tick int, obj *dota.CDOTAUserMsg_OverheadEvent)
+	OnParticleManager  func(tick int, obj *dota.CDOTAUserMsg_ParticleManager)
+	OnPredictionResult func(tick int, obj *dota.CDOTAUserMsg_PredictionResult)
+	OnPrint            func(tick int, obj *dota.CSVCMsg_Print)
+	//allchat
 	OnSayText2                  func(tick int, obj *dota.CUserMsg_SayText2)
 	OnSendAudio                 func(tick int, obj *dota.CUserMsg_SendAudio)
 	OnSendRoshanPopup           func(tick int, obj *dota.CDOTAUserMsg_SendRoshanPopup)
@@ -78,12 +85,16 @@ type Parser struct {
 	OnVoiceMask                 func(tick int, obj *dota.CUserMsg_VoiceMask)
 	OnWorldLine                 func(tick int, obj *dota.CDOTAUserMsg_WorldLine)
 
-	OnFileInfo  func(obj *dota.CDemoFileInfo)
+	//outputs general game info (heroes, who won, match id etc), is at the end of file
+	OnFileInfo func(obj *dota.CDemoFileInfo)
+
 	OnSetConVar func(obj *dota.CNETMsg_SetConVar)
 	OnVoiceData func(obj *dota.CSVCMsg_VoiceData)
 
+	//seems like almost everything useful is in here
 	OnCombatLog func(log CombatLogEntry)
 
+	//this lists all? entities in DotA (doesn't seem to be just the current game)
 	OnTablename func(name string)
 
 	BeforeTick func(tick int)

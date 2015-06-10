@@ -1,3 +1,4 @@
 examples/chat/chat
 examples/fileinfo/fileinfo
 replays/*.dem
+*.txt
