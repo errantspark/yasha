@@ -1,6 +1,7 @@
 package yasha
 
 import (
+	"fmt"
 	"math"
 	"sort"
 	"strings"
@@ -116,6 +117,7 @@ func NewParser(data []byte) *Parser {
 }
 
 func (p *Parser) Parse() {
+	fmt.Println("est")
 	p.Sth = NewSendTablesHelper()
 	p.Stsh = NewStateHelper()
 	p.Entities = make([]*PacketEntity, 2048)
@@ -499,6 +501,8 @@ func (p *Parser) onCDemoClassInfo(cdci *dota.CDemoClassInfo) {
 }
 
 func (p *Parser) ParsePacket(tick int, pe *dota.CSVCMsg_PacketEntities) {
+	fmt.Println("packet entity from inside the parser")
+	fmt.Println(pe)
 	br := NewBitReader(pe.GetEntityData())
 	currentIndex := -1
 

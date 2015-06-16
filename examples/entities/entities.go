@@ -21,10 +21,11 @@ func main() {
 		parser := yasha.ParserFromFile(path)
 		parser.OnEntityPreserved = func(pe *yasha.PacketEntity) {
 			if strings.HasPrefix(pe.Name, "DT_DOTA_Unit_Hero_") {
-				if _, ok := pe.Delta["DT_DOTA_BaseNPC.m_vecOrigin"]; ok {
-					coord := coordFromCell(pe)
-					fmt.Printf("%30s | X: %5.0f Y: %5.0f\n", pe.Name[18:len(pe.Name)], coord.X, coord.Y)
-				}
+				fmt.Println(pe)
+				//if _, ok := pe.Delta["DT_DOTA_BaseNPC.m_vecOrigin"]; ok {
+				//coord := coordFromCell(pe)
+				//fmt.Printf("%30s | X: %5.0f Y: %5.0f\n", pe.Name[18:len(pe.Name)], coord.X, coord.Y)
+				//}
 			}
 		}
 		parser.Parse()
