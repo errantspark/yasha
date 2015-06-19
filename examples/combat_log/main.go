@@ -5,7 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/dotabuff/yasha"
+	"github.com/davecgh/go-spew/spew"
+
+	"../../../yasha"
 	"github.com/dotabuff/yasha/dota"
 )
 
@@ -19,23 +21,40 @@ func main() {
 
 		var now time.Duration
 		var gameTime, preGameStarttime float64
+		var nowRaw float64
 
-		parser.OnEntityPreserved = func(pe *yasha.PacketEntity) {
-			if pe.Name == "DT_DOTAGamerulesProxy" {
-				gameTime = pe.Values["DT_DOTAGamerules.m_fGameTime"].(float64)
-				preGameStarttime = pe.Values["DT_DOTAGamerules.m_flPreGameStartTime"].(float64)
-				now = time.Duration(gameTime-preGameStarttime) * time.Second
-			}
-		}
 		parser.OnFileInfo = func(obj *dota.CDemoFileInfo) {
 			fmt.Println(obj)
 		}
 
-		parser.OnCombatLog = func(entry yasha.CombatLogEntry) {
-			switch log := entry.(type) {
-			case *yasha.CombatLogModifierAdd:
-				fmt.Println(preGameStarttime)
-				fmt.Println(log.Time - float32(preGameStarttime))
+		var dumpedMap bool
+		parser.OnActiveModifierDelta = func(modmap map[int]*yasha.StringTableItem, modbuf yasha.ModifierBuffs) {
+			if !dumpedMap {
+				fmt.Println("modmap")
+				spew.Dump(modmap)
+				dumpedMap = true
+			}
+			if nowRaw > 85 && nowRaw < 100 {
+				fmt.Println("modbuf")
+				spew.Dump(modbuf)
+
+				if nowRaw > 100 {
+					parser.OnActiveModifierDelta = nil
+				}
+			}
+		}
+
+		var lul = func(entry yasha.CombatLogEntry) {
+			if nowRaw > 85 && nowRaw < 100 {
+				switch log := entry.(type) {
+				case *yasha.CombatLogModifierAdd:
+					fmt.Println(now)
+					fmt.Println("combatmod")
+					spew.Dump(log)
+				}
+			}
+			if nowRaw > 100 {
+				parser.OnCombatLog = nil
 			}
 			/*
 				case *yasha.CombatLogMultikill:
@@ -67,6 +86,18 @@ func main() {
 						fmt.Println(log)
 					}
 			*/
+
+		}
+		parser.OnEntityPreserved = func(pe *yasha.PacketEntity) {
+			if pe.Name == "DT_DOTAGamerulesProxy" {
+				gameTime = pe.Values["DT_DOTAGamerules.m_fGameTime"].(float64)
+				preGameStarttime = pe.Values["DT_DOTAGamerules.m_flPreGameStartTime"].(float64)
+				now = time.Duration(gameTime-preGameStarttime) * time.Second
+				nowRaw = gameTime - preGameStarttime
+				if nowRaw > 85 {
+					parser.OnCombatLog = lul
+				}
+			}
 		}
 		parser.Parse()
 	}

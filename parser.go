@@ -448,6 +448,8 @@ func (p *Parser) onGameEvent(tick int, obj *dota.CSVCMsg_GameEvent) {
 		// master : <*>type:1 val_string:"146.66.152.49:28027"
 	case "dota_combatlog":
 		if p.OnCombatLog != nil {
+			fmt.Println("clogentry")
+			fmt.Println(obj)
 			if log := p.combatLogParser.parse(obj); log != nil {
 				p.OnCombatLog(log)
 			}
@@ -501,8 +503,6 @@ func (p *Parser) onCDemoClassInfo(cdci *dota.CDemoClassInfo) {
 }
 
 func (p *Parser) ParsePacket(tick int, pe *dota.CSVCMsg_PacketEntities) {
-	fmt.Println("packet entity from inside the parser")
-	fmt.Println(pe)
 	br := NewBitReader(pe.GetEntityData())
 	currentIndex := -1
 
