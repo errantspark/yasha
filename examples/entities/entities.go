@@ -56,7 +56,7 @@ func main() {
 				//fmt.Printf("%30s | X: %5.0f Y: %5.0f\n", pe.Name[18:len(pe.Name)], coord.X, coord.Y)
 				//}
 			}
-			if pe.Tick > offset+90 {
+			if offset > 0 && pe.Tick > offset+90 {
 				parser.OnEntityPreserved = nil
 			}
 		}
