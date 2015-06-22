@@ -1,4 +1,7 @@
 examples/chat/chat
 examples/fileinfo/fileinfo
 replays/*.dem
-*.txt
+examples/*/*.exe
+examples/*/*.txt
+examples/*/*.json
+examples/*/*.bat

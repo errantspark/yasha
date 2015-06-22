@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	//"reflect"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/dotabuff/yasha"
@@ -56,9 +57,10 @@ func main() {
 				//fmt.Printf("%30s | X: %5.0f Y: %5.0f\n", pe.Name[18:len(pe.Name)], coord.X, coord.Y)
 				//}
 			}
-			if offset > 0 && pe.Tick > offset+90 {
-				parser.OnEntityPreserved = nil
-			}
+			/*
+				if offset > 0 && pe.Tick > offset+90 {
+					parser.OnEntityPreserved = nil
+				}*/
 		}
 		parser.Parse()
 	}
@@ -89,6 +91,7 @@ type HeroState struct {
 	Rotation    float64
 	VisionNight int
 	VisionDay   int
+	//TypeOfXP    string
 }
 
 func parseHeroState(pe *yasha.PacketEntity) HeroState {
@@ -116,7 +119,8 @@ func parseHeroState(pe *yasha.PacketEntity) HeroState {
 		ManaRegen:   pe.Values["DT_DOTA_BaseNPC.m_flManaThinkRegen"].(float64),
 		ManaMax:     pe.Values["DT_DOTA_BaseNPC.m_flMaxMana"].(float64),
 		Level:       pe.Values["DT_DOTA_BaseNPC.m_iCurrentLevel"].(int),
-		XP:          pe.Values["DT_DOTA_BaseNPC.m_iCustomXPValue"].(int),
+		//	XP:          pe.Values["DT_DOTA_BaseNPC.m_iCurrentXP"].(int),
+		XP:          pe.Values["DT_DOTA_BaseNPC_Hero.m_iCurrentXP"].(int),
 		PlayerID:    pe.Values["DT_DOTA_BaseNPC_Hero.m_iPlayerID"].(int),
 		Rotation:    pe.Values["DT_DOTA_BaseNPC.m_angRotation[1]"].(float64),
 		VisionNight: pe.Values["DT_DOTA_BaseNPC.m_iNightTimeVisionRange"].(int),
