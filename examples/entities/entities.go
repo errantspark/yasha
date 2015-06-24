@@ -31,6 +31,7 @@ func main() {
 		var now time.Duration
 		var gameTime, preGameStarttime float64
 		var offset int
+		var herostates = make(map[string][]HeroState)
 
 		parser.OnEntityPreserved = func(pe *yasha.PacketEntity) {
 			if pe.Name == "DT_DOTAGamerulesProxy" {
@@ -45,11 +46,12 @@ func main() {
 			if offset > 0 && pe.Tick > offset && pe.Tick < offset+90 {
 				if strings.HasPrefix(pe.Name, "DT_DOTA_Unit_Hero_") {
 					var hero = parseHeroState(pe)
-					data, err := json.MarshalIndent(hero, "", "  ")
-					if err != nil {
-						panic(err)
+					//var oldstate HeroState
+					if len(herostates[pe.Name]) > 1 {
+						oldstate := herostates[pe.Name][len(herostates[pe.Name])-1]
+						hero = hero.Diff(oldstate)
 					}
-					spew.Println(string(data))
+					herostates[pe.Name] = append(herostates[pe.Name], hero)
 				}
 				//spew.Println(string(data))
 				//if _, ok := pe.Delta["DT_DOTA_BaseNPC.m_vecOrigin"]; ok {
@@ -63,35 +65,117 @@ func main() {
 				}*/
 		}
 		parser.Parse()
+		data, err := json.MarshalIndent(herostates, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		spew.Println(string(data))
 	}
 }
 
 type HeroState struct {
-	Tick        int
-	Name        string
-	Health      uint
-	HealthMax   uint
-	Cord        Coordinate
-	AgiBase     float64
-	Agi         float64
-	IntBase     float64
-	Int         float64
-	StrBase     float64
-	Str         float64
-	DmgBonus    int
-	DmgMax      int
-	DmgMin      int
-	HealthRegen float64
-	Mana        float64
-	ManaRegen   float64
-	ManaMax     float64
-	Level       int
-	XP          int
-	PlayerID    int
-	Rotation    float64
-	VisionNight int
-	VisionDay   int
+	Tick        int        `json:",omitempty"`
+	Name        string     `json:",omitempty"`
+	Health      uint       `json:",omitempty"`
+	HealthMax   uint       `json:",omitempty"`
+	Cord        Coordinate `json:",omitempty"`
+	AgiBase     float64    `json:",omitempty"`
+	Agi         float64    `json:",omitempty"`
+	IntBase     float64    `json:",omitempty"`
+	Int         float64    `json:",omitempty"`
+	StrBase     float64    `json:",omitempty"`
+	Str         float64    `json:",omitempty"`
+	DmgBonus    int        `json:",omitempty"`
+	DmgMax      int        `json:",omitempty"`
+	DmgMin      int        `json:",omitempty"`
+	HealthRegen float64    `json:",omitempty"`
+	Mana        float64    `json:",omitempty"`
+	ManaRegen   float64    `json:",omitempty"`
+	ManaMax     float64    `json:",omitempty"`
+	Level       int        `json:",omitempty"`
+	XP          int        `json:",omitempty"`
+	PlayerID    int        `json:",omitempty"`
+	Rotation    float64    `json:",omitempty"`
+	VisionNight int        `json:",omitempty"`
+	VisionDay   int        `json:",omitempty"`
 	//TypeOfXP    string
+}
+
+func (h HeroState) Diff(oldState HeroState) HeroState {
+	var nullState = HeroState{}
+	if h.Tick == oldState.Tick {
+		h.Tick = nullState.Tick
+	}
+	if h.Name == oldState.Name {
+		h.Name = nullState.Name
+	}
+	if h.Health == oldState.Health {
+		h.Health = nullState.Health
+	}
+	if h.HealthMax == oldState.HealthMax {
+		h.HealthMax = nullState.HealthMax
+	}
+	if h.Cord == oldState.Cord {
+		h.Cord = nullState.Cord
+	}
+	if h.AgiBase == oldState.AgiBase {
+		h.AgiBase = nullState.AgiBase
+	}
+	if h.Agi == oldState.Agi {
+		h.Agi = nullState.Agi
+	}
+	if h.IntBase == oldState.IntBase {
+		h.IntBase = nullState.IntBase
+	}
+	if h.Int == oldState.Int {
+		h.Int = nullState.Int
+	}
+	if h.StrBase == oldState.StrBase {
+		h.StrBase = nullState.StrBase
+	}
+	if h.Str == oldState.Str {
+		h.Str = nullState.Str
+	}
+	if h.DmgBonus == oldState.DmgBonus {
+		h.DmgBonus = nullState.DmgBonus
+	}
+	if h.DmgMax == oldState.DmgMax {
+		h.DmgMax = nullState.DmgMax
+	}
+	if h.DmgMin == oldState.DmgMin {
+		h.DmgMin = nullState.DmgMin
+	}
+	if h.HealthRegen == oldState.HealthRegen {
+		h.HealthRegen = nullState.HealthRegen
+	}
+	if h.Mana == oldState.Mana {
+		h.Mana = nullState.Mana
+	}
+	if h.ManaRegen == oldState.ManaRegen {
+		h.ManaRegen = nullState.ManaRegen
+	}
+	if h.ManaMax == oldState.ManaMax {
+		h.ManaMax = nullState.ManaMax
+	}
+	if h.Level == oldState.Level {
+		h.Level = nullState.Level
+	}
+	if h.XP == oldState.XP {
+		h.XP = nullState.XP
+	}
+	if h.PlayerID == oldState.PlayerID {
+		h.PlayerID = nullState.PlayerID
+	}
+	if h.Rotation == oldState.Rotation {
+		h.Rotation = nullState.Rotation
+	}
+	if h.VisionNight == oldState.VisionNight {
+		h.VisionNight = nullState.VisionNight
+	}
+	if h.VisionDay == oldState.VisionDay {
+		h.VisionDay = nullState.VisionDay
+	}
+	return h
 }
 
 func parseHeroState(pe *yasha.PacketEntity) HeroState {
@@ -135,7 +219,7 @@ func getTickOffset(tick int, pretime float64, gametime float64) int {
 }
 
 type Coordinate struct {
-	X, Y float64
+	X, Y float64 `json:",omitempty"`
 }
 
 func coordFromCell(pe *yasha.PacketEntity) Coordinate {
