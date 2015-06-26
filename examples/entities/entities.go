@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./dict.go"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -32,6 +33,7 @@ func main() {
 		var gameTime, preGameStarttime float64
 		var offset int
 		var herostates = make(map[string][]HeroState)
+		var rollingstate = make(map[string]HeroState)
 
 		parser.OnEntityPreserved = func(pe *yasha.PacketEntity) {
 			if pe.Name == "DT_DOTAGamerulesProxy" {
@@ -42,22 +44,22 @@ func main() {
 				}
 				now = time.Duration(gameTime-preGameStarttime) * time.Second
 			}
-			//if strings.HasPrefix(pe.Name, "DT_DOTA_Unit_Hero_") {
-			if offset > 0 && pe.Tick > offset && pe.Tick < offset+90 {
+			//if offset > 0 && pe.Tick > offset && pe.Tick < offset+(36*30) {
+			if offset > 0 {
 				if strings.HasPrefix(pe.Name, "DT_DOTA_Unit_Hero_") {
-					var hero = parseHeroState(pe)
-					//var oldstate HeroState
-					if len(herostates[pe.Name]) > 1 {
-						oldstate := herostates[pe.Name][len(herostates[pe.Name])-1]
-						hero = hero.Diff(oldstate)
+					var hero = parseHeroState(pe, gameTime)
+					var herodiff HeroState
+					if len(herostates[pe.Name]) > 0 {
+						herodiff = hero.Diff(rollingstate[pe.Name])
+						if hero.Tick-rollingstate[pe.Name].Tick > 30 {
+							herostates[pe.Name] = append(herostates[pe.Name], herodiff)
+							rollingstate[pe.Name] = hero
+						}
+					} else {
+						herostates[pe.Name] = append(herostates[pe.Name], hero)
+						rollingstate[pe.Name] = hero
 					}
-					herostates[pe.Name] = append(herostates[pe.Name], hero)
 				}
-				//spew.Println(string(data))
-				//if _, ok := pe.Delta["DT_DOTA_BaseNPC.m_vecOrigin"]; ok {
-				//coord := coordFromCell(pe)
-				//fmt.Printf("%30s | X: %5.0f Y: %5.0f\n", pe.Name[18:len(pe.Name)], coord.X, coord.Y)
-				//}
 			}
 			/*
 				if offset > 0 && pe.Tick > offset+90 {
@@ -74,30 +76,32 @@ func main() {
 }
 
 type HeroState struct {
-	Tick        int        `json:",omitempty"`
-	Name        string     `json:",omitempty"`
-	Health      uint       `json:",omitempty"`
-	HealthMax   uint       `json:",omitempty"`
-	Cord        Coordinate `json:",omitempty"`
-	AgiBase     float64    `json:",omitempty"`
-	Agi         float64    `json:",omitempty"`
-	IntBase     float64    `json:",omitempty"`
-	Int         float64    `json:",omitempty"`
-	StrBase     float64    `json:",omitempty"`
-	Str         float64    `json:",omitempty"`
-	DmgBonus    int        `json:",omitempty"`
-	DmgMax      int        `json:",omitempty"`
-	DmgMin      int        `json:",omitempty"`
-	HealthRegen float64    `json:",omitempty"`
-	Mana        float64    `json:",omitempty"`
-	ManaRegen   float64    `json:",omitempty"`
-	ManaMax     float64    `json:",omitempty"`
-	Level       int        `json:",omitempty"`
-	XP          int        `json:",omitempty"`
-	PlayerID    int        `json:",omitempty"`
-	Rotation    float64    `json:",omitempty"`
-	VisionNight int        `json:",omitempty"`
-	VisionDay   int        `json:",omitempty"`
+	Tick        int     `json:",omitempty"`
+	Time        float64 `json:",omitempty"`
+	Name        string  `json:",omitempty"`
+	Health      uint    `json:",omitempty"`
+	HealthMax   uint    `json:",omitempty"`
+	WorldX      float64 `json:",omitempty"`
+	WorldY      float64 `json:",omitempty"`
+	AgiBase     float64 `json:",omitempty"`
+	Agi         float64 `json:",omitempty"`
+	IntBase     float64 `json:",omitempty"`
+	Int         float64 `json:",omitempty"`
+	StrBase     float64 `json:",omitempty"`
+	Str         float64 `json:",omitempty"`
+	DmgBonus    int     `json:",omitempty"`
+	DmgMax      int     `json:",omitempty"`
+	DmgMin      int     `json:",omitempty"`
+	HealthRegen float64 `json:",omitempty"`
+	Mana        float64 `json:",omitempty"`
+	ManaRegen   float64 `json:",omitempty"`
+	ManaMax     float64 `json:",omitempty"`
+	Level       int     `json:",omitempty"`
+	XP          int     `json:",omitempty"`
+	PlayerID    int     `json:",omitempty"`
+	Rotation    float64 `json:",omitempty"`
+	VisionNight int     `json:",omitempty"`
+	VisionDay   int     `json:",omitempty"`
 	//TypeOfXP    string
 }
 
@@ -105,6 +109,9 @@ func (h HeroState) Diff(oldState HeroState) HeroState {
 	var nullState = HeroState{}
 	if h.Tick == oldState.Tick {
 		h.Tick = nullState.Tick
+	}
+	if h.Time == oldState.Time {
+		h.Time = nullState.Time
 	}
 	if h.Name == oldState.Name {
 		h.Name = nullState.Name
@@ -115,8 +122,11 @@ func (h HeroState) Diff(oldState HeroState) HeroState {
 	if h.HealthMax == oldState.HealthMax {
 		h.HealthMax = nullState.HealthMax
 	}
-	if h.Cord == oldState.Cord {
-		h.Cord = nullState.Cord
+	if h.WorldX == oldState.WorldX {
+		h.WorldX = nullState.WorldX
+	}
+	if h.WorldY == oldState.WorldY {
+		h.WorldY = nullState.WorldY
 	}
 	if h.AgiBase == oldState.AgiBase {
 		h.AgiBase = nullState.AgiBase
@@ -178,7 +188,7 @@ func (h HeroState) Diff(oldState HeroState) HeroState {
 	return h
 }
 
-func parseHeroState(pe *yasha.PacketEntity) HeroState {
+func parseHeroState(pe *yasha.PacketEntity, time float64) HeroState {
 	if !strings.HasPrefix(pe.Name, "DT_DOTA_Unit_Hero_") {
 		panic("not a hero packet")
 	}
@@ -187,8 +197,10 @@ func parseHeroState(pe *yasha.PacketEntity) HeroState {
 		HealthMax:   pe.Values["DT_DOTA_BaseNPC.m_iMaxHealth"].(uint),
 		Health:      pe.Values["DT_DOTA_BaseNPC.m_iHealth"].(uint),
 		Tick:        pe.Tick,
-		Name:        pe.Name,
-		Cord:        coord,
+		Time:        time,
+		Name:        herodict.heroes[pe.Name],
+		WorldX:      coord.X,
+		WorldY:      coord.Y,
 		AgiBase:     pe.Values["DT_DOTA_BaseNPC_Hero.m_flAgility"].(float64),
 		Agi:         pe.Values["DT_DOTA_BaseNPC_Hero.m_flAgilityTotal"].(float64),
 		IntBase:     pe.Values["DT_DOTA_BaseNPC_Hero.m_flIntellect"].(float64),
